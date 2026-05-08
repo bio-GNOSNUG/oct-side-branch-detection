@@ -1,5 +1,8 @@
+
 # Automated Side Branch Detection in OCT Imaging Using Deep Learning
 
+This project develops a deep learning pipeline to automatically detect side branches in optical coherence tomography (OCT) image sequences. The goal is to improve detection robustness, reduce manual annotation burden, and support scalable clinical workflows for intravascular imaging analysis.
+  
 ## Introduction
 
 Coronary heart disease (CHD) is a leading global cause of mortality (Shi et al., 2024), often requiring intravascular imaging to assess coronary artery plaque and guide treatment. Optical coherence tomography (OCT) provides high-resolution imaging of coronary vessels and is widely used to evaluate plaque morphology and support interventional decision-making (Nagaraja, Kalra and Puri, 2020).
@@ -13,6 +16,22 @@ This project investigates multi-frame deep learning strategies for automated sid
 The models are trained and evaluated using OCT data from a cohort of 300 patients from a previously published clinical trial (Räber et al., 2022)., with clinician-provided annotations used as ground truth. Performance is compared against a baseline Faster R-CNN model.
 
 ## Dataset
+
+## Method
+
+This project explores two main modelling approaches:
+
+#### Baseline Model
+- Faster R-CNN applied to individual OCT frames  
+- Frame-by-frame detection without temporal context  
+
+#### Proposal
+- Multi-frame feature aggregation across consecutive OCT frames  
+- CNN backbone for spatial feature extraction  
+- Attention-based mechanisms to capture spatiotemporal relationships  
+- Improved discrimination of side branches using temporal consistency
+
+This design is reflective of clinical practice, where clinicians interpret adjacent frames to resolve ambiguous vascular structures.
 
 ## Dependencies
 
