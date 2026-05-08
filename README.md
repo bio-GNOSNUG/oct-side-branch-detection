@@ -1,6 +1,6 @@
 # Automated Side Branch Detection in OCT Imaging Using Deep Learning
 
-This project develops a deep learning pipeline to automatically detect blood vessel side branches in optical coherence tomography (OCT) video. The goal is to improve detection robustness, reduce manual annotation burden, and support scalable clinical workflows for intravascular imaging analysis.
+This project develops a deep learning pipeline to automatically detect blood vessel side branches in optical coherence tomography (OCT) video. The goal is to improve detection quality, reduce manual annotation burden, and support scalable clinical workflows for intravascular imaging analysis.
   
 ## Introduction
 
