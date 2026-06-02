@@ -2,6 +2,8 @@ from scipy.ndimage import rotate as rotate_image
 import numpy as np
 import pydicom
 import re
+import argparse
+from pathlib import Path 
 
 def dcm_to_npy(path):
     dcm = pydicom.dcmread(path)
@@ -133,31 +135,67 @@ def interpolate_pts(points):
     return interpolated_points
 
 
-if __name__ == "__main__":
-
+def process_one(dcm_path, txt_path, output_path):
 
     # for single vessel. e.g 'BASE-002-LAD_BL.txt'
+    # e.g 'dicom/BASE-002-LAD_BL.dcm'
+    oct_npy = dcm_to_npy(dcm_path)
 
-    oct_dcm_path = '' # e.g 'dicom/BASE-002-LAD_BL.dcm'
-    matching_path = '' # e.g 'matching/BASE-002-LAD_BL.txt'
+    oct_keypt_ids, oct_keypt_rot, _, _, _, _, len_oct = extract_matching_labels(txt_path)
 
-    oct_npy = dcm_to_npy(oct_dcm_path)
+    oct_interpolated_rot, _ = interpolate_oct_angles(
+        oct_keypt_ids,
+        oct_keypt_rot,
+        len_oct,
+        cropped=False
+    )
 
-    oct_keypt_ids, oct_keypt_rot, _, _, _, _, len_oct = extract_matching_labels(matching_path)
-    
-    oct_interpolated_rot, oct_keypt_rot = interpolate_oct_angles(oct_keypt_ids, oct_keypt_rot, len_oct, cropped=False)
-
-    rot_frames_to_save = []
+    rotated_frames = []
 
     for frame_id, frame in enumerate(oct_npy):
-        
+
         rot = oct_interpolated_rot[frame_id][1]
-        rot_frame = rotate_image(frame, rot, reshape=False)
-        rot_frames_to_save.append(rot_frame)
 
-    rot_frames_to_save = np.array(rot_frames_to_save)
+        rotated_frames.append(
+            rotate_image(frame, rot, reshape=False)
+        )
+
+    rotated_frames = np.array(rotated_frames)
+
+    np.save(output_path, rotated_frames)
+
+    print(f"Saved: {output_path}")
 
 
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--dicom_dir", required=True)
+    parser.add_argument("--matching_dir", required=True)
+    parser.add_argument("--output_dir", required=True)
+
+    args = parser.parse_args()
+
+    dicom_dir = Path(args.dicom_dir)
+    matching_dir = Path(args.matching_dir)
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(exist_ok=True, parents=True)
+
+    for dcm_path in dicom_dir.glob("*.dcm"):
+
+        name = dcm_path.stem
+        txt_path = matching_dir / f"{name}.txt"
+
+        if not txt_path.exists():
+            print(f"Skipping {name}, no matching file")
+            continue
+
+        process_one(
+            dcm_path,
+            txt_path,
+            output_dir / f"{name}_rotated.npy"
+        )
 
 
     
