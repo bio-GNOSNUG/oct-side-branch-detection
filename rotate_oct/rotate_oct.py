@@ -182,7 +182,7 @@ if __name__ == "__main__":
     output_dir = Path(args.output_dir)
     output_dir.mkdir(exist_ok=True, parents=True)
 
-    for dcm_path in dicom_dir.glob("*.dcm"):
+    for dcm_path in dicom_dir.rglob("*.dcm"):
 
         name = dcm_path.stem
         txt_path = matching_dir / f"{name}.txt"
