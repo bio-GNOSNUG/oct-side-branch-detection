@@ -185,7 +185,11 @@ if __name__ == "__main__":
     for dcm_path in dicom_dir.rglob("*.dcm"):
 
         name = dcm_path.stem
+        output_file = output_dir / f"{name}_rotated.npy"
         txt_path = matching_dir / f"{name}.txt"
+
+        if output_file.exists():
+            continue
 
         if not txt_path.exists():
             print(f"Skipping {name}, no matching file")
