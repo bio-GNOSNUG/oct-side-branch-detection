@@ -3,12 +3,12 @@ import pandas as pd
 import numpy as np
 import argparse
 from pathlib import Path 
-import tqdm
+from tqdm import tqdm
 
 def process_vessel(vessel_dataset, vessel_file, vessel_name, save_dir):
 
     # Determine testset
-    split = vessel_dataset[vessel_dataset['Vessel_Name']== vessel_name]['SET'].item()
+    split = vessel_dataset[vessel_dataset['Vessel_Name']== vessel_name]['set'].unique().item()
     split = split.lower()
 
     if split is None:
@@ -50,8 +50,11 @@ if __name__ == "__main__":
     vessels_dir = Path(args.input_dir)
     output_dir = Path(args.output_dir)
 
-    df = pd.read_excel(df_path)
-    df['Vessel_Name'] = df['Patient'] + '_' + df['Vessel']
+    df = pd.read_csv(df_path)
+    df['Vessel_Name'] = (df["filename"]
+                         .str.removesuffix(".jpg")
+                         .str[5:]
+                         .str.replace(r"_\d{4}$", "", regex=True))
 
     output_dir.mkdir(exist_ok=True, parents=True)
 
@@ -64,6 +67,7 @@ if __name__ == "__main__":
 
         match = df[df["Vessel_Name"] == name]
         missing = []
+
         if len(match) == 0:
             missing.append(name)
             print(f"{name} not found")
