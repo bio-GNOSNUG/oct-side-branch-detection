@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import argparse
 from pathlib import Path 
+import tqdm
 
 def process_vessel(vessel_dataset, vessel_file, vessel_name, save_dir):
 
@@ -39,7 +40,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    # Must read in vessel information
     parser.add_argument("--vessels_summary_file", required=True)
     parser.add_argument("--input_dir", required=True)
     parser.add_argument("--output_dir", required=True)
@@ -55,7 +55,9 @@ if __name__ == "__main__":
 
     output_dir.mkdir(exist_ok=True, parents=True)
 
-    for file in vessels_dir.rglob("*.npy"):
+    vessel_files = list(vessels_dir.rglob("*.npy"))
+
+    for file in tqdm(vessel_files, desc="Processing vessels"):
 
         name = file.stem
         name = name.removesuffix("_rotated")
@@ -66,6 +68,8 @@ if __name__ == "__main__":
                         save_dir= output_dir)
         
         print(f"{name}: complete")
+
+    print('Finished')
 
 
 
