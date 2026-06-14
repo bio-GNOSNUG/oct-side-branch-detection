@@ -1,27 +1,46 @@
 import os
 import pandas as pd 
+import numpy as np
 import argparse
 from pathlib import Path 
 
-def process_vessel(vessel_file):
-
-    vessel_name = os.path.splitext(vessel_file)[0]
-    vessel_name = vessel_name.removesuffix("_rotated")
+def process_vessel(vessel_dataset, vessel_file, vessel_name, save_dir):
 
     # Determine split
+    split = vessel_dataset[vessel_dataset['Vessel_Name']== vessel_name]['SET'].item()
+    split = split.lower()
 
-    # Create output folder
+    if split is None:
+        print(f"{vessel_name} not found in annotations")
+        return
+    
+    try:
+        vessel_frames = np.load(vessel_file, mmap_mode="r")
+
+    except Exception as e:
+        print(f'Could not load {vessel_file}: {e}')
+        return
+    
+    save_folder = os.path.join(save_dir, 
+                               split, 
+                               vessel_name,
+                               "oct_frames")
+    
+    os.makedirs(save_folder,exist_ok=True)
+    print(f"{vessel_name}:{len(vessel_frames)} frames in {split} datatset")
 
     # save frame file 
+    for frame_id, frame in enumerate(vessel_frames):
+        save_path = os.path.join(save_folder,f"{frame_id:04d}.npy")
+        np.save(save_path, frame)
 
-    pass
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
     # Must read in vessel information
-    parser.add_argument("--vessels_summary_file ", required=True)
+    parser.add_argument("--vessels_summary_file", required=True)
     parser.add_argument("--input_dir", required=True)
     parser.add_argument("--output_dir", required=True)
 
@@ -36,6 +55,17 @@ if __name__ == "__main__":
 
     output_dir.mkdir(exist_ok=True, parents=True)
 
+    for file in vessels_dir.rglob("*.npy"):
+
+        name = file.stem
+        name = name.removesuffix("_rotated")
+
+        process_vessel(vessel_dataset=df,
+                        vessel_file=file, 
+                        vessel_name=name,
+                        save_dir= output_dir)
+        
+        print(f"{name}: complete")
 
 
 
