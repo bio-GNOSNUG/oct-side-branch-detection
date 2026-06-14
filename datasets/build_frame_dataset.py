@@ -7,7 +7,7 @@ import tqdm
 
 def process_vessel(vessel_dataset, vessel_file, vessel_name, save_dir):
 
-    # Determine split
+    # Determine testset
     split = vessel_dataset[vessel_dataset['Vessel_Name']== vessel_name]['SET'].item()
     split = split.lower()
 
@@ -62,6 +62,13 @@ if __name__ == "__main__":
         name = file.stem
         name = name.removesuffix("_rotated")
 
+        match = df[df["Vessel_Name"] == name]
+        missing = []
+        if len(match) == 0:
+            missing.append(name)
+            print(f"{name} not found")
+
+
         process_vessel(vessel_dataset=df,
                         vessel_file=file, 
                         vessel_name=name,
@@ -70,6 +77,7 @@ if __name__ == "__main__":
         print(f"{name}: complete")
 
     print('Finished')
+    print(f"Missing vessels: {missing}")
 
 
 
