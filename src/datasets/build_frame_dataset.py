@@ -1,6 +1,7 @@
 import os
 import pandas as pd 
 import numpy as np
+import re
 import argparse
 from pathlib import Path 
 from tqdm import tqdm
@@ -10,6 +11,11 @@ def process_vessel(vessel_dataset, vessel_file, vessel_name, save_dir):
     # Determine testset
     split = vessel_dataset[vessel_dataset['Vessel_Name']== vessel_name]['set'].unique().item()
     split = split.lower()
+
+    # May be multiple file names per vessel, differing only by frame id
+    vessel_id_name = vessel_dataset[vessel_dataset['Vessel_Name']== vessel_name]['filename'].iloc[0]
+    vessel_id_name = vessel_id_name.removesuffix(".jpg")
+    vessel_id_name = re.sub(r"_\d{4}$", "", vessel_id_name)
 
     if split is None:
         print(f"{vessel_name} not found in annotations")
@@ -24,11 +30,10 @@ def process_vessel(vessel_dataset, vessel_file, vessel_name, save_dir):
     
     save_folder = os.path.join(save_dir, 
                                split, 
-                               vessel_name,
+                               vessel_id_name,
                                "oct_frames")
     
     os.makedirs(save_folder,exist_ok=True)
-    print(f"{vessel_name}:{len(vessel_frames)} frames in {split} datatset")
 
     # save frame file 
     for frame_id, frame in enumerate(vessel_frames):
@@ -59,6 +64,7 @@ if __name__ == "__main__":
     output_dir.mkdir(exist_ok=True, parents=True)
 
     vessel_files = list(vessels_dir.rglob("*.npy"))
+    missing = []
 
     for file in tqdm(vessel_files, desc="Processing vessels"):
 
@@ -66,7 +72,6 @@ if __name__ == "__main__":
         name = name.removesuffix("_rotated")
 
         match = df[df["Vessel_Name"] == name]
-        missing = []
 
         if len(match) == 0:
             missing.append(name)
