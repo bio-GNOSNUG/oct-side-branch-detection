@@ -36,7 +36,6 @@ class SB_Dataset(Dataset):
         frame_id = img_path[-4:]
             
         if self.modality == 'oct':
-            print(vessel_name)
             image_path = self.data_root + 'processed/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, frame_id)
 
             image = np.load(image_path)
@@ -53,9 +52,9 @@ class SB_Dataset(Dataset):
         boxes = np.array(boxes, dtype=np.float32)
         # scale bounding boxes to new image size. i.e 1024 to 224.
         if self.modality == 'oct':
-            boxes = boxes * (224 / 1024)
+            boxes = boxes * (self.resolution / 1024)
         else:
-            boxes = boxes * (224 / 480)
+            boxes = boxes * (self.resolution / 480)
         boxes = np.rint(boxes).astype(np.int64)
         # getting the areas of the boxes
         #print(boxes)
