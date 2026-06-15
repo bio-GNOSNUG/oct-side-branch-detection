@@ -14,7 +14,7 @@ class SB_Dataset_Inc_Negatives(Dataset):
         self.modality = modality
 
         # load all annotations into memory
-        with open(data_root + '{}/sb_{}.json'.format(modality, subset), 'r') as j:
+        with open(data_root + 'external/annotation_jsons/sb_{}.json'.format(subset), 'r') as j:
             self.annotations = json.loads(j.read())
         # we need to be able to index the annotations in __getitem__ so convert to list
         self.annotations = list(self.annotations.items())
@@ -32,7 +32,7 @@ class SB_Dataset_Inc_Negatives(Dataset):
         frame_id = img_path[-4:]
 
         if self.modality == 'oct':
-            image_path = self.data_root + '../Frame Dataset/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, frame_id)
+            image_path = self.data_root + 'processed/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, frame_id)
             image = np.load(image_path)
 
         else:
@@ -51,9 +51,8 @@ class SB_Dataset_Inc_Negatives(Dataset):
             boxes = np.array(boxes, dtype=np.float32)
             # scale bounding boxes to new image size. i.e 1024 to 224.
             if self.modality == 'oct':
-                boxes = boxes * (480 / 1024)
-            #else:
-            #    boxes = boxes * (224 / 480)
+                boxes = boxes * (self.resolution / 1024)
+   
             boxes = np.rint(boxes).astype(np.int64)
             # getting the areas of the boxes
             #print(boxes)

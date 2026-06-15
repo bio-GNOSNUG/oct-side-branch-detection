@@ -53,8 +53,6 @@ class SB_Dataset(Dataset):
         # scale bounding boxes to new image size. i.e 1024 to 224.
         if self.modality == 'oct':
             boxes = boxes * (self.resolution / 1024)
-        else:
-            boxes = boxes * (self.resolution / 480)
         boxes = np.rint(boxes).astype(np.int64)
         # getting the areas of the boxes
         #print(boxes)
