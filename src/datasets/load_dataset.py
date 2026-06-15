@@ -2,24 +2,24 @@ from src.datasets.sb_dataset import SB_Dataset
 from src.datasets.sb_dataset_inc_negatives import SB_Dataset_Inc_Negatives
 from torch.utils.data import DataLoader
 from src.datasets.augmentations import get_transform
-from detection_utils.utils import collate_fn, collate_fn_inc_negatives
+from src.detection_utils.utils import collate_fn, collate_fn_inc_negatives
 
 def load_dataset(config):
 
     data_root = config['DATA_ROOT']
 
     if config['DATASET'] == 'sb':
-        train_dataset = SB_Dataset(data_root=data_root + 'Side Branch Annotations/',
+        train_dataset = SB_Dataset(data_root=data_root,
                                    modality=config['MODALITY'],
                                    subset='train',
                                    transforms=get_transform(train=config['AUGMENTATION']),
                                    resolution=config['RESOLUTION'])
-        val_dataset = SB_Dataset(data_root=data_root + 'Side Branch Annotations/',
+        val_dataset = SB_Dataset(data_root=data_root,
                                  modality=config['MODALITY'],
                                  subset='val',
                                  transforms=False,
                                  resolution=config['RESOLUTION'])
-        test_dataset = SB_Dataset(data_root=data_root + 'Side Branch Annotations/',
+        test_dataset = SB_Dataset(data_root=data_root,
                                   modality=config['MODALITY'],
                                   subset='test',
                                   transforms=False,
@@ -44,17 +44,17 @@ def load_dataset(config):
         return (train_loader, val_loader, test_loader), (train_dataset, val_dataset, test_dataset)
 
     elif config['DATASET'] == 'sb_inc_negatives':
-        train_dataset = SB_Dataset_Inc_Negatives(data_root=data_root + 'Side Branch Annotations/',
+        train_dataset = SB_Dataset_Inc_Negatives(data_root=data_root,
                                    modality=config['MODALITY'],
                                    subset='train',
                                    transforms=get_transform(train=config['AUGMENTATION']),
                                    resolution=config['RESOLUTION'])
-        val_dataset = SB_Dataset_Inc_Negatives(data_root=data_root + 'Side Branch Annotations/',
+        val_dataset = SB_Dataset_Inc_Negatives(data_root=data_root,
                                  modality=config['MODALITY'],
                                  subset='val',
                                  transforms=False,
                                  resolution=config['RESOLUTION'])
-        test_dataset = SB_Dataset_Inc_Negatives(data_root=data_root + 'Side Branch Annotations/',
+        test_dataset = SB_Dataset_Inc_Negatives(data_root=data_root,
                                   modality=config['MODALITY'],
                                   subset='test',
                                   transforms=False,

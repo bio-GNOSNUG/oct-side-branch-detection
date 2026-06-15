@@ -15,8 +15,7 @@ class SB_Dataset(Dataset):
         self.modality = modality
 
         # load all annotations into memory
-        #print(data_root + '/oct/annotations/sb_{}.json'.format(subset))
-        with open(data_root + '{}/sb_{}.json'.format(modality, subset), 'r') as j:
+        with open(data_root + 'external/annotation_jsons/sb_{}.json'.format(subset), 'r') as j:
             self.annotations = json.loads(j.read())
         # we need to be able to index the annotations in __getitem__ so convert to list
         self.annotations = list(self.annotations.items())
@@ -37,7 +36,8 @@ class SB_Dataset(Dataset):
         frame_id = img_path[-4:]
             
         if self.modality == 'oct':
-            image_path = self.data_root + '../Frame Dataset/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, frame_id)
+            print(vessel_name)
+            image_path = self.data_root + 'processed/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, frame_id)
 
             image = np.load(image_path)
 
