@@ -2,8 +2,7 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 import json
-from PIL import Image, ImageDraw
-import cv2
+
 
 
 class SB_Dataset(Dataset):
@@ -36,16 +35,11 @@ class SB_Dataset(Dataset):
 
         vessel_name = img_path[:-5]
         frame_id = img_path[-4:]
-
-        if self.modality == 'ivus':
-            image_path = self.data_root + '../Frame Dataset/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name, self.modality, frame_id)
-            image = np.load(image_path)
             
-        elif self.modality == 'oct':
+        if self.modality == 'oct':
             image_path = self.data_root + '../Frame Dataset/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, frame_id)
 
             image = np.load(image_path)
-
 
         else:
             print('No modality selected')
