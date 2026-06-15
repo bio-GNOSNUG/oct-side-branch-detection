@@ -77,8 +77,6 @@ if __name__ == "__main__":
                         vessel_file=file, 
                         vessel_name=name,
                         save_dir= output_dir)
-        
-        print(f"{name}: complete")
 
     print('Finished')
     print(f"Missing vessels: {missing}")
