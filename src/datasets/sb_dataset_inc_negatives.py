@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 import json
+import cv2
 
 
 class SB_Dataset_Inc_Negatives(Dataset):
@@ -40,6 +41,11 @@ class SB_Dataset_Inc_Negatives(Dataset):
 
         #image = self.annotate_frame(image, annotations)
 
+        # Resize images to specified resolution
+        image = cv2.resize(image,
+                           (self.resolution, self.resolution),
+                           interpolation=cv2.INTER_AREA)
+
         image = image / 255.0 # [0,1] just like the pretrained weights.
         image = np.expand_dims(image, -1)
 
@@ -52,7 +58,6 @@ class SB_Dataset_Inc_Negatives(Dataset):
             # scale bounding boxes to new image size. i.e 1024 to 224.
             if self.modality == 'oct':
                 boxes = boxes * (self.resolution / 1024)
-   
             boxes = np.rint(boxes).astype(np.int64)
             # getting the areas of the boxes
             #print(boxes)
