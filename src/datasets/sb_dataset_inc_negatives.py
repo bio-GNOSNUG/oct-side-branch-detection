@@ -58,7 +58,7 @@ class SB_Dataset_Inc_Negatives(Dataset):
             # scale bounding boxes to new image size. i.e 1024 to 224.
             if self.modality == 'oct':
                 boxes = boxes * (self.resolution / 1024)
-            boxes = np.rint(boxes).astype(np.int64)
+            boxes = np.rint(boxes).astype(np.float32)
             # getting the areas of the boxes
             #print(boxes)
             if len(boxes.shape) > 1:
@@ -106,7 +106,7 @@ class SB_Dataset_Inc_Negatives(Dataset):
         image = torch.permute(image, (2,0,1))
 
         if len(anno) > 0:
-            target['boxes'] = torch.tensor(boxes)
+            target['boxes'] = torch.as_tensor(boxes,dtype=torch.float32)
         else:
             target['boxes'] = torch.empty((0, 4), dtype=torch.float32)
             target['labels'] = torch.empty((0), dtype=torch.int64)

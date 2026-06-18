@@ -59,7 +59,7 @@ class SB_Dataset(Dataset):
         # scale bounding boxes to new image size. i.e 1024 to 224.
         if self.modality == 'oct':
             boxes = boxes * (self.resolution / 1024)
-        boxes = np.rint(boxes).astype(np.int64)
+        boxes = np.rint(boxes).astype(np.float32)
         # getting the areas of the boxes
         #print(boxes)
         if len(boxes.shape) > 1:
@@ -89,7 +89,7 @@ class SB_Dataset(Dataset):
 
         image = torch.from_numpy(image).to(torch.float32)
         image = torch.permute(image, (2,0,1))
-        target['boxes'] = torch.tensor(boxes)
+        target['boxes'] = torch.as_tensor(boxes,dtype=torch.float32)
 
         if self.subset != 'test':
             if len(target['boxes'].shape) < 2:
