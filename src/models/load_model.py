@@ -1,5 +1,5 @@
 import torchvision
-from models.faster_rcnn_edit import fasterrcnn_resnet18_fpn, fasterrcnn_resnet50_fpn
+from src.models.faster_rcnn_edit import fasterrcnn_resnet18_fpn, fasterrcnn_resnet50_fpn
 
 def load_model(config, device):
 

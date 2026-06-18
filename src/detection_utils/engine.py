@@ -6,9 +6,9 @@ from typing import Tuple, List, Dict, Optional
 
 import torch
 import torchvision.models.detection.mask_rcnn
-from detection_utils.utils import MetricLogger, SmoothedValue, reduce_dict
-from detection_utils.coco_eval import CocoEvaluator
-from detection_utils.coco_utils import get_coco_api_from_dataset
+from src.detection_utils.utils import MetricLogger, SmoothedValue, reduce_dict
+from src.detection_utils.coco_eval import CocoEvaluator
+from src.detection_utils.coco_utils import get_coco_api_from_dataset
 
 from torch import Tensor
 from collections import OrderedDict

@@ -6,10 +6,10 @@ import torch
 import numpy as np
 import os
 from torchinfo import summary
-from models.load_model import load_model
-from datasets.load_dataset import load_dataset
-from detection_utils.visualize import plot_loss
-from detection_utils.engine import train_one_epoch, evaluate, evaluate_loss
+from src.models.load_model import load_model
+from src.datasets.load_dataset import load_dataset
+from src.detection_utils.visualize import plot_loss
+from src.detection_utils.engine import train_one_epoch, evaluate, evaluate_loss
 
 
 def main(config):
@@ -32,7 +32,7 @@ def main(config):
     # get the model using our helper function
     model = load_model(config, device)
 
-    summary(model, (config['TRAIN_BATCH_SIZE'], config['INPUT_DIM'], config['RESOLUTION'], config['RESOLUTION']))
+    #summary(model, (config['TRAIN_BATCH_SIZE'], config['INPUT_DIM'], config['RESOLUTION'], config['RESOLUTION']))
 
     # construct an optimizer
     params = [p for p in model.parameters() if p.requires_grad]
@@ -42,7 +42,7 @@ def main(config):
     # 10x every 3 epochs -- DISABLED
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=1)
 
-    save_folder = os.path.join(config['DATA_ROOT'], '..', 'Side_Branch_Detection', "results", config['RUN_ID'])
+    save_folder = os.path.join('../tests/', "results", config['RUN_ID'])
     try:
         os.mkdir(save_folder)
     except Exception as e:
@@ -92,11 +92,11 @@ def main(config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--DATA_ROOT', type=str, default='../Data/')
-    parser.add_argument('--TRAIN_BATCH_SIZE', type=int, default=64)
-    parser.add_argument('--VAL_BATCH_SIZE', type=int, default=64)
+    parser.add_argument('--DATA_ROOT', type=str, default=None)
+    parser.add_argument('--TRAIN_BATCH_SIZE', type=int, default=None)
+    parser.add_argument('--VAL_BATCH_SIZE', type=int, default=None)
     parser.add_argument('--CONFIG', type=str)
-    parser.add_argument('--RUN_ID', type=str, default='local')
+    parser.add_argument('--RUN_ID', type=str, default=None)
     parser.add_argument('--INFERENCE', action=argparse.BooleanOptionalAction, default=False)
     config = parser.parse_args()
     cmd_config = vars(config)
@@ -106,7 +106,9 @@ if __name__ == "__main__":
         yaml_config = yaml.load(f, yaml.FullLoader)
 
     config = yaml_config
-    config.update(cmd_config)  # command line args overide yaml
+    for k, v in cmd_config.items():
+        if v is not None:
+            config[k] = v
 
     print('config: ', config)
 

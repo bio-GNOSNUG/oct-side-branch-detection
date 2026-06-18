@@ -9,11 +9,11 @@ import seaborn as sns
 import torchvision
 import torch
 from torchvision import transforms as torchtrans
-from models.load_model import load_model
-from datasets.load_dataset import load_dataset
-from detection_utils.visualize import plot_img_bbox
+from src.models.load_model import load_model
+from src.datasets.load_dataset import load_dataset
+from src.detection_utils.visualize import plot_img_bbox
 from tqdm import tqdm
-from detection_utils.mean_avg_precision import mean_average_precision
+from src.detection_utils.mean_avg_precision import mean_average_precision
 from PIL import Image, ImageDraw
 import torchvision.transforms.functional as F
 from torchvision.ops import box_iou

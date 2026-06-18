@@ -20,7 +20,7 @@ from torchvision.models.detection.backbone_utils import _mobilenet_extractor, _r
 from torchvision.models.detection.generalized_rcnn import GeneralizedRCNN
 from torchvision.models.detection.roi_heads import RoIHeads
 from torchvision.models.detection.rpn import RegionProposalNetwork, RPNHead
-from models.transform_edit import GeneralizedRCNNTransform
+from src.models.transform_edit import GeneralizedRCNNTransform
 
 
 __all__ = [
