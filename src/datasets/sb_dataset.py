@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 import json
+import cv2
 
 
 
@@ -42,6 +43,11 @@ class SB_Dataset(Dataset):
 
         else:
             print('No modality selected')
+
+        # Resize images to specified resolution
+        image = cv2.resize(image,
+                           (self.resolution, self.resolution),
+                           interpolation=cv2.INTER_AREA)
 
         image = image / 255.0 # [0,1] just like the pretrained weights.
         image = np.expand_dims(image, -1)
