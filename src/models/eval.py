@@ -150,7 +150,7 @@ def combine_predictions(predictions, iou_threshold=0.5, suppression_iou_threshol
 
 def main(config):
 
-    save_folder = os.path.join(config['DATA_ROOT'], '..', 'Side_Branch_Detection', "results", config['RUN_ID'])
+    save_folder = os.path.join('tests', "results", config['RUN_ID'])
     try:
         os.mkdir(save_folder + '/pred')
     except Exception as e:
@@ -178,7 +178,7 @@ def main(config):
         for i in tqdm(range(len(test_dataset))):
             img, target = test_dataset[i]
 
-            if config['TTA']:
+            if config.get('TTA', False):
 
                 img_rot90 = rotate_img_bbox(img, 90)
                 img_rot180 = rotate_img_bbox(img, 180)
@@ -310,7 +310,7 @@ def main(config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--DATA_ROOT', type=str, default='../Data/')
+    parser.add_argument('--DATA_ROOT', type=str, default=None)
     parser.add_argument('--CONFIG', type=str)
     parser.add_argument('--RUN_ID', type=str)
     parser.add_argument('--INFERENCE', action=argparse.BooleanOptionalAction, default=True)
@@ -322,7 +322,9 @@ if __name__ == "__main__":
         yaml_config = yaml.load(f, yaml.FullLoader)
 
     config = yaml_config
-    config.update(cmd_config)  # command line args overide yaml
+    for k, v in cmd_config.items():
+        if v is not None:
+            config[k] = v
 
     print('config: ', config)
 
