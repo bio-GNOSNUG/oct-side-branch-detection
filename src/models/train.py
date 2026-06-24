@@ -42,11 +42,12 @@ def main(config):
     # 10x every 3 epochs -- DISABLED
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=1)
 
-    save_folder = os.path.join('../tests/', "results", config['RUN_ID'])
-    try:
-        os.mkdir(save_folder)
-    except Exception as e:
-        print('Warning: ', e)
+    save_folder = os.path.join('tests', "results", config['RUN_ID'])
+    os.makedirs(save_folder, exist_ok=True)
+    print(
+    f"Results will be saved to: "
+    f"{os.path.abspath(save_folder)}"
+)
 
     best_val_loss = np.inf
     best_val_map = 0
