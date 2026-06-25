@@ -213,6 +213,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# Weights and biases
+wandb/
+
 # Project specific folders
 data/
 outputs/
