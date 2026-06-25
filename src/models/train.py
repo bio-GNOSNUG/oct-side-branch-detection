@@ -10,6 +10,7 @@ from src.models.load_model import load_model
 from src.datasets.load_dataset import load_dataset
 from src.detection_utils.visualize import plot_loss
 from src.detection_utils.engine import train_one_epoch, evaluate, evaluate_loss
+import wandb
 
 
 def main(config):
@@ -74,6 +75,12 @@ def main(config):
 
         print('Val mAP: {:.3f}, loss: {:.3f}'.format(val_map, val_loss))
 
+        wandb.log({"epoch": epoch,
+                   "train_loss": train_loss,
+                   "val_loss": float(val_loss),
+                   "val_map": val_map,
+                   "lr": optimizer.param_groups[0]["lr"]})
+
         # save model if the performance improves.
         # if val_loss < best_val_loss:
         #     print('Val loss improved from {:.3f} to {:.3f}. Saving model to..{}'.format(best_val_loss, val_loss, save_folder))
@@ -86,6 +93,10 @@ def main(config):
             best_val_map = val_map
             torch.save(model.state_dict(), os.path.join(save_folder, 'best_map.pt'))
             print("saved model new best mAP")
+
+            artifact = wandb.Artifact("best-model",type="model")
+            artifact.add_file(os.path.join(save_folder,"best_map.pt"))
+            wandb.log_artifact(artifact)
 
         # plot loss and metrics
         plot_loss(train_losses, val_losses, val_map_all, save_folder)
@@ -110,6 +121,10 @@ if __name__ == "__main__":
     for k, v in cmd_config.items():
         if v is not None:
             config[k] = v
+
+    wandb.init(project="oct-side-branch-detection",
+               name=config["RUN_ID"],
+               config=config)
 
     print('config: ', config)
 

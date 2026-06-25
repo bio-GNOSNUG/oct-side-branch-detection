@@ -2,6 +2,7 @@ import argparse
 import yaml
 import os
 import json
+import glob
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
@@ -21,6 +22,7 @@ import matplotlib.patches as patches
 from torchvision.ops import nms
 #from torchvision.ops import _box_inter_union
 from sklearn.metrics import precision_recall_curve, average_precision_score
+import wandb
 
 def apply_nms(orig_prediction, iou_thresh=0.3):
     # torchvision returns the indices of the bboxes to keep
@@ -167,6 +169,8 @@ def main(config):
     weights = torch.load(save_folder + '/best_map.pt')
     model.load_state_dict(weights)
 
+    wandb.summary["checkpoint"] = (save_folder + "/best_map.pt")
+
     pred_boxes = []
     true_boxes = []
 
@@ -288,6 +292,8 @@ def main(config):
     with open(save_folder+'/test_scores.txt', 'w') as f:
         print(scores, file=f)
 
+    wandb.log({"AP": float(AP),"Precision": float(precision),"Recall": float(recall),"F1": float(f1)})
+
     # Compute confusion matrix
     cm = confusion_matrix(true_binary_all, pred_binary_all)
 
@@ -306,6 +312,18 @@ def main(config):
     with open(save_folder+'/classification_report.txt', 'w') as f:
         f.write("Classification Report:\n")
         f.write(report)
+
+    wandb.summary["classification_report"] = report
+    wandb.log({"confusion_matrix":wandb.plot.confusion_matrix(probs=None, 
+                                                              y_true=true_binary_all,
+                                                              preds=pred_binary_all,
+                                                              class_names=["No SB", "SB"])})
+
+
+    pred_images = glob.glob(os.path.join(save_folder, "pred", "*.jpg"))
+
+    wandb.log({"predictions": [wandb.Image(img) for img in pred_images[:20]]})
+    wandb.finish()
 
 
 if __name__ == "__main__":
@@ -327,5 +345,9 @@ if __name__ == "__main__":
             config[k] = v
 
     print('config: ', config)
+
+    wandb.init(project="oct-side-branch-detection",
+               name=f"{config['RUN_ID']}_eval",
+               config=config)
 
     main(config)
