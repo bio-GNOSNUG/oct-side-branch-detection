@@ -11,6 +11,7 @@ from src.datasets.load_dataset import load_dataset
 from src.detection_utils.visualize import plot_loss
 from src.detection_utils.engine import train_one_epoch, evaluate, evaluate_loss
 import wandb
+import subprocess
 
 
 def main(config):
@@ -45,10 +46,21 @@ def main(config):
 
     save_folder = os.path.join('tests', "results", config['RUN_ID'])
     os.makedirs(save_folder, exist_ok=True)
-    print(
-    f"Results will be saved to: "
-    f"{os.path.abspath(save_folder)}"
-)
+    print(f"Results will be saved to: "
+          f"{os.path.abspath(save_folder)}")
+    
+    # Save config
+    with open(os.path.join(save_folder, "config.yaml"), "w") as f:
+        yaml.dump(config, f, sort_keys=False)
+
+    # Save git commit
+    try: 
+        git_commit = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
+        with open(os.path.join(save_folder, "git_commit.txt"), "w") as f:
+            f.write(git_commit)
+        wandb.config.update({"git_commit": git_commit})
+    except Exception as e:
+        print(f"Warning: Could not determine git commit: {e}")
 
     best_val_loss = np.inf
     best_val_map = 0
