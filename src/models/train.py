@@ -70,7 +70,7 @@ def main(config):
 
     for epoch in range(config['EPOCHS']):
         # training for one epoch
-        model, metrics, train_loss = train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=config['TRAIN_PRINT'])
+        model, metrics, train_loss, loss_metrics = train_one_epoch(model, optimizer, train_loader, device, epoch, print_freq=config['TRAIN_PRINT'])
         # update the learning rate
         lr_scheduler.step()
         # validation loss
@@ -91,7 +91,11 @@ def main(config):
                    "train_loss": train_loss,
                    "val_loss": float(val_loss),
                    "val_map": val_map,
-                   "lr": optimizer.param_groups[0]["lr"]})
+                   "lr": optimizer.param_groups[0]["lr"],
+                   "loss_classifier": loss_metrics["loss_classifier"],
+                   "loss_box_reg": loss_metrics["loss_box_reg"],
+                   "loss_objectness": loss_metrics["loss_objectness"],
+                   "loss_rpn_box_reg": loss_metrics["loss_rpn_box_reg"]})
 
         # save model if the performance improves.
         # if val_loss < best_val_loss:
