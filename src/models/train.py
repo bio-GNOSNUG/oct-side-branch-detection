@@ -64,6 +64,7 @@ def main(config):
 
     best_val_loss = np.inf
     best_val_map = 0
+    epoch_no_improvement = 0 
     train_losses = []
     val_losses = []
     val_map_all = []
@@ -114,8 +115,16 @@ def main(config):
             artifact.add_file(os.path.join(save_folder,"best_map.pt"))
             wandb.log_artifact(artifact)
 
+        else: 
+            epoch_no_improvement += 1
+
         # plot loss and metrics
         plot_loss(train_losses, val_losses, val_map_all, save_folder)
+        
+        # early stopping
+        if epoch_no_improvement >= config["PATIENCE"]:
+            print(f"Early stopping after {epoch + 1} epochs")
+            break
 
 
 if __name__ == "__main__":
@@ -126,6 +135,7 @@ if __name__ == "__main__":
     parser.add_argument('--CONFIG', type=str)
     parser.add_argument('--RUN_ID', type=str, default=None)
     parser.add_argument('--INFERENCE', action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument('--PATIENCE', type=int, default=None)
     config = parser.parse_args()
     cmd_config = vars(config)
 
