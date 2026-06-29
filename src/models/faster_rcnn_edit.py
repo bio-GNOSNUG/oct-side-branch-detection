@@ -411,7 +411,35 @@ _COMMON_META = {
 #
 #     return model
 
-def fasterrcnn_resnet18_fpn(num_classes, encoder_weights, trainable_backbone_layers=5, **kwargs):
+
+def get_anchor_generator(resolution):
+    # Define the anchor generator with sizes and aspect ratios
+    
+    # estimated these using a 224 x 224 image, resnet18 encoder.
+    # and the expected boxes are around 2-30% of the image.
+    if resolution == 224:
+        sizes = ((11, 22),  # Feature map level 1: sizes 11 and 22 pixels
+                 (22, 44),  # Feature map level 2: sizes 22 and 44 pixels
+                 (44, 88),  # Feature map level 3: sizes 44 and 88 pixels
+                 (88, 112),  # Feature map level 4: sizes 88 and 112 pixels
+                 (112, 168)  # Feature map level 5: sizes 112 and 168 pixels
+                 )
+
+    # image resolution 480x480
+    # objects in the image have a wdith/height of between 20 and 275 pixels. 
+    elif resolution == 480:
+        sizes = ((20,40), # Feature map level 1: small objects
+                 (40,80), # Feature map level 2: medium-small objects
+                 (80,160), # Feature map level 3: medium objects
+                 (160,240), # Feature map level 4: medium-large objects
+                 (240,320)) # Feature map level 5: large objects
+
+    return AnchorGenerator(
+        sizes=sizes,
+        aspect_ratios=((0.5, 1.0, 2.0),) * 5
+    )
+
+def fasterrcnn_resnet18_fpn(num_classes, encoder_weights,resolution, trainable_backbone_layers=5, **kwargs):
 
     if encoder_weights is not None:
         is_trained = True
@@ -441,18 +469,7 @@ def fasterrcnn_resnet18_fpn(num_classes, encoder_weights, trainable_backbone_lay
     backbone.out_channels = 512
 
     # Define the anchor generator with sizes and aspect ratios
-    # estimated these using a 224 x 224 image, resnet18 encoder.
-    # and the expected boxes are around 2-30% of the image.
-    anchor_generator = AnchorGenerator(
-        sizes=(
-            (11, 22),  # Feature map level 1: sizes 11 and 22 pixels
-            (22, 44),  # Feature map level 2: sizes 22 and 44 pixels
-            (44, 88),  # Feature map level 3: sizes 44 and 88 pixels
-            (88, 112),  # Feature map level 4: sizes 88 and 112 pixels
-            (112, 168)  # Feature map level 5: sizes 112 and 168 pixels
-        ),
-        aspect_ratios=((0.5, 1.0, 2.0),) * 5
-    )
+    anchor_generator = get_anchor_generator(resolution)
 
     # Define the RoI Pooler
     roi_pooler = MultiScaleRoIAlign(
@@ -475,7 +492,7 @@ def fasterrcnn_resnet18_fpn(num_classes, encoder_weights, trainable_backbone_lay
 
     return model
 
-def fasterrcnn_resnet50_fpn(num_classes, encoder_weights, trainable_backbone_layers=5, **kwargs):
+def fasterrcnn_resnet50_fpn(num_classes, encoder_weights, resolution, trainable_backbone_layers=5, **kwargs):
 
     if encoder_weights is not None:
         is_trained = True
@@ -505,24 +522,7 @@ def fasterrcnn_resnet50_fpn(num_classes, encoder_weights, trainable_backbone_lay
     backbone.out_channels = 256
 
     # Define the anchor generator with sizes and aspect ratios
-    # image resolution 480x480
-    # objects in the image have a wdith/height of between 20 and 275 pixels.
-    anchor_generator = AnchorGenerator(
-        sizes=(
-            (20, 40),    # Feature map level 1: small objects
-            (40, 80),    # Feature map level 2: medium-small objects
-            (80, 160),   # Feature map level 3: medium objects
-            (160, 240),  # Feature map level 4: medium-large objects
-            (240, 320),  # Feature map level 5: large objects
-        ),
-        aspect_ratios=(
-            (0.5, 1.0, 2.0),  # Aspect ratios for all feature map levels
-            (0.5, 1.0, 2.0),
-            (0.5, 1.0, 2.0),
-            (0.5, 1.0, 2.0),
-            (0.5, 1.0, 2.0)
-        )
-    )
+    anchor_generator = get_anchor_generator(resolution)
 
     # Define the RoI Pooler
     roi_pooler = MultiScaleRoIAlign(
