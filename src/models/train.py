@@ -122,9 +122,11 @@ def main(config):
         plot_loss(train_losses, val_losses, val_map_all, save_folder)
         
         # early stopping
-        if epoch_no_improvement >= config["PATIENCE"]:
-            print(f"Early stopping after {epoch + 1} epochs")
-            break
+        if config["EARLY_STOPPING"]:
+            if epoch_no_improvement >= config["PATIENCE"]:
+                print(f"Early stopping at epoch {epoch + 1} "
+                      f"(no improvement for {config['PATIENCE']} consecutive epochs).")
+                break
 
 
 if __name__ == "__main__":
@@ -135,6 +137,7 @@ if __name__ == "__main__":
     parser.add_argument('--CONFIG', type=str)
     parser.add_argument('--RUN_ID', type=str, default=None)
     parser.add_argument('--INFERENCE', action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument('--EARLY_STOPPING', action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument('--PATIENCE', type=int, default=None)
     config = parser.parse_args()
     cmd_config = vars(config)
