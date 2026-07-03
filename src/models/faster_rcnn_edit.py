@@ -457,7 +457,7 @@ def fasterrcnn_resnet18_fpn(num_classes, encoder_weights,resolution, input_dim, 
 
     # load resnet18 weights.
     if is_trained:
-        weight_path = os.path.join('../Vessel_Wall_Detection/results', encoder_weights, 'bestDice.pt')
+        weight_path = os.path.join('tests/results', encoder_weights, 'best_map.pt')
         state_dict = torch.load(weight_path)
         # filter state dict to keep resnet18 encoder weights.
         state_dict = {key.replace('encoder.', ''): value for key, value in state_dict.items() if 'encoder' in key and 'fc' not in key}
@@ -510,7 +510,7 @@ def fasterrcnn_resnet50_fpn(num_classes, encoder_weights, resolution, input_dim,
 
     # load resnet50 weights.
     if is_trained:
-        weight_path = os.path.join('../Vessel_Wall_Detection/results', encoder_weights, 'bestDice.pt')
+        weight_path = os.path.join('tests/results', encoder_weights, 'best_map.pt')
         state_dict = torch.load(weight_path)
         # filter state dict to keep resnet18 encoder weights.
         state_dict = {key.replace('encoder.', ''): value for key, value in state_dict.items() if 'encoder' in key and 'fc' not in key}
