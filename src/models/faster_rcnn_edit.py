@@ -439,7 +439,7 @@ def get_anchor_generator(resolution):
         aspect_ratios=((0.5, 1.0, 2.0),) * 5
     )
 
-def fasterrcnn_resnet18_fpn(num_classes, encoder_weights,resolution, trainable_backbone_layers=5, **kwargs):
+def fasterrcnn_resnet18_fpn(num_classes, encoder_weights,resolution, input_dim, trainable_backbone_layers=5, **kwargs):
 
     if encoder_weights is not None:
         is_trained = True
@@ -450,7 +450,8 @@ def fasterrcnn_resnet18_fpn(num_classes, encoder_weights,resolution, trainable_b
     norm_layer = misc_nn_ops.FrozenBatchNorm2d if is_trained else nn.BatchNorm2d
 
     backbone = resnet18(weights=None, norm_layer=norm_layer)
-    backbone.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    backbone.conv1 = nn.Conv2d(input_dim,64,kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+ 
     # Remove the fully connected layer
     backbone.fc = nn.Identity()
 
@@ -492,7 +493,7 @@ def fasterrcnn_resnet18_fpn(num_classes, encoder_weights,resolution, trainable_b
 
     return model
 
-def fasterrcnn_resnet50_fpn(num_classes, encoder_weights, resolution, trainable_backbone_layers=5, **kwargs):
+def fasterrcnn_resnet50_fpn(num_classes, encoder_weights, resolution, input_dim, trainable_backbone_layers=5, **kwargs):
 
     if encoder_weights is not None:
         is_trained = True
@@ -503,7 +504,7 @@ def fasterrcnn_resnet50_fpn(num_classes, encoder_weights, resolution, trainable_
     norm_layer = misc_nn_ops.FrozenBatchNorm2d if is_trained else nn.BatchNorm2d
 
     backbone = resnet50(weights=None, norm_layer=norm_layer)
-    backbone.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    backbone.conv1 = nn.Conv2d(input_dim, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
     # Remove the fully connected layer
     backbone.fc = nn.Identity()
 
