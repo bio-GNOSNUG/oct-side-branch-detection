@@ -411,6 +411,37 @@ _COMMON_META = {
 #
 #     return model
 
+def adapt_input_conv_weights(state_dict, input_dim):
+    """
+    Multiply conv1 pre-trained weights to number of image channels
+
+    Args:
+        state_dict (dict): dictionary of model weights and biases
+        input_dim (int): number of input channels
+    """
+    key = "backbone.body.conv1.weight"
+
+    # Check first convolutional layer in best_map.pt
+    if key not in state_dict:
+        print(f'{key} not in best_map.pt')
+        return state_dict
+
+    weight = state_dict[key]
+
+    if weight.shape[1] == input_dim:
+        return state_dict
+
+    if weight.shape[1] == 1:
+        state_dict[key] = weight.repeat(1, input_dim, 1, 1) / input_dim
+        print(f"Adapted conv1 from 1 → {input_dim} channels.")
+
+    else:
+        raise ValueError(
+            f"Cannot adapt conv1 from {weight.shape[1]} to {input_dim} channels."
+            )
+
+    return state_dict
+
 
 def get_anchor_generator(resolution):
     # Define the anchor generator with sizes and aspect ratios
@@ -439,32 +470,16 @@ def get_anchor_generator(resolution):
         aspect_ratios=((0.5, 1.0, 2.0),) * 5
     )
 
-def fasterrcnn_resnet18_fpn(num_classes, encoder_weights,resolution, input_dim, trainable_backbone_layers=5, **kwargs):
+def fasterrcnn_resnet18_fpn(num_classes, pretrained,resolution, input_dim, trainable_backbone_layers=5, **kwargs):
 
-    if encoder_weights is not None:
-        is_trained = True
-    else:
-        is_trained = False
-
-    trainable_backbone_layers = _validate_trainable_layers(is_trained, trainable_backbone_layers, 5, 3)
-    norm_layer = misc_nn_ops.FrozenBatchNorm2d if is_trained else nn.BatchNorm2d
+    trainable_backbone_layers = _validate_trainable_layers(pretrained, trainable_backbone_layers, 5, 3)
+    norm_layer = misc_nn_ops.FrozenBatchNorm2d if pretrained else nn.BatchNorm2d
 
     backbone = resnet18(weights=None, norm_layer=norm_layer)
     backbone.conv1 = nn.Conv2d(input_dim,64,kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
  
     # Remove the fully connected layer
     backbone.fc = nn.Identity()
-
-    # load resnet18 weights.
-    if is_trained:
-        weight_path = os.path.join('tests/results', encoder_weights, 'best_map.pt')
-        state_dict = torch.load(weight_path)
-        # filter state dict to keep resnet18 encoder weights.
-        state_dict = {key.replace('encoder.', ''): value for key, value in state_dict.items() if 'encoder' in key and 'fc' not in key}
-        # Load the state_dict into the model
-        backbone.load_state_dict(state_dict)
-        print('Loaded weights from ', weight_path)
-
 
     # Number of output channels for the resnet18 backbone
     backbone.out_channels = 512
@@ -493,31 +508,15 @@ def fasterrcnn_resnet18_fpn(num_classes, encoder_weights,resolution, input_dim, 
 
     return model
 
-def fasterrcnn_resnet50_fpn(num_classes, encoder_weights, resolution, input_dim, trainable_backbone_layers=5, **kwargs):
+def fasterrcnn_resnet50_fpn(num_classes, pretrained, resolution, input_dim, trainable_backbone_layers=5, **kwargs):
 
-    if encoder_weights is not None:
-        is_trained = True
-    else:
-        is_trained = False
-
-    trainable_backbone_layers = _validate_trainable_layers(is_trained, trainable_backbone_layers, 5, 3)
-    norm_layer = misc_nn_ops.FrozenBatchNorm2d if is_trained else nn.BatchNorm2d
+    trainable_backbone_layers = _validate_trainable_layers(pretrained, trainable_backbone_layers, 5, 3)
+    norm_layer = misc_nn_ops.FrozenBatchNorm2d if pretrained else nn.BatchNorm2d
 
     backbone = resnet50(weights=None, norm_layer=norm_layer)
     backbone.conv1 = nn.Conv2d(input_dim, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
     # Remove the fully connected layer
     backbone.fc = nn.Identity()
-
-    # load resnet50 weights.
-    if is_trained:
-        weight_path = os.path.join('tests/results', encoder_weights, 'best_map.pt')
-        state_dict = torch.load(weight_path)
-        # filter state dict to keep resnet18 encoder weights.
-        state_dict = {key.replace('encoder.', ''): value for key, value in state_dict.items() if 'encoder' in key and 'fc' not in key}
-        # Load the state_dict into the model
-        backbone.load_state_dict(state_dict)
-        print('Loaded weights from ', weight_path)
-
 
     # Number of output channels for the resnet18 backbone
     backbone.out_channels = 256
