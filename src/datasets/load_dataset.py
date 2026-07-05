@@ -48,17 +48,20 @@ def load_dataset(config):
                                    modality=config['MODALITY'],
                                    subset='train',
                                    transforms=get_transform(train=config['AUGMENTATION']),
-                                   resolution=config['RESOLUTION'])
+                                   resolution=config['RESOLUTION'],
+                                   t_frames = config['T_FRAMES'])
         val_dataset = SB_Dataset_Inc_Negatives(data_root=data_root,
                                  modality=config['MODALITY'],
                                  subset='val',
                                  transforms=False,
-                                 resolution=config['RESOLUTION'])
+                                 resolution=config['RESOLUTION'],
+                                 t_frames = config['T_FRAMES'])
         test_dataset = SB_Dataset_Inc_Negatives(data_root=data_root,
                                   modality=config['MODALITY'],
                                   subset='test',
                                   transforms=False,
-                                  resolution=config['RESOLUTION'])
+                                  resolution=config['RESOLUTION'], 
+                                  t_frames = config['T_FRAMES'])
 
         train_loader = DataLoader(train_dataset,
                                   batch_size=config['TRAIN_BATCH_SIZE'],

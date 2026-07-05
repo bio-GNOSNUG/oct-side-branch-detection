@@ -7,16 +7,18 @@ import cv2
 
 class SB_Dataset_Inc_Negatives(Dataset):
 
-    def __init__(self, data_root, modality, subset, transforms, resolution):
+    def __init__(self, data_root, modality, subset, transforms, resolution, t_frames):
         self.transforms = transforms
         self.subset = subset
         self.data_root = data_root
         self.resolution = resolution
         self.modality = modality
+        self.t_frames = t_frames
 
         # load all annotations into memory
         with open(data_root + 'external/annotation_jsons/sb_{}.json'.format(subset), 'r') as j:
             self.annotations = json.loads(j.read())
+
         # we need to be able to index the annotations in __getitem__ so convert to list
         self.annotations = list(self.annotations.items())
 
@@ -25,29 +27,45 @@ class SB_Dataset_Inc_Negatives(Dataset):
         # classes: 0 index is reserved for background
         self.classes = ['none', 'sidebranch']
 
+    def load_window(self, frame_id, vessel_name):
+
+        if self.t_frames == 1:
+            frame_ids = [frame_id]
+
+        else:
+            half = self.t_frames // 2
+            frame_ids = list(range(frame_id-half, frame_id+half+1))
+
+        images = []
+        
+        for f in frame_ids:
+            
+            image_path = self.data_root + 'processed/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, f)
+            img = np.load(image_path)
+            images.append(img) # 5 x (1024,1024)
+
+        return images
+        
+
     def __getitem__(self, idx):
 
         img_path, anno = self.annotations[idx]
 
         vessel_name = img_path[:-5]
-        frame_id = img_path[-4:]
+        frame_id = int(img_path[-4:])
 
-        if self.modality == 'oct':
-            image_path = self.data_root + 'processed/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, frame_id)
-            image = np.load(image_path)
-
-        else:
-            print('No modality selected')
-
-        #image = self.annotate_frame(image, annotations)
+        images = self.load_window(frame_id, vessel_name)
 
         # Resize images to specified resolution
-        image = cv2.resize(image,
-                           (self.resolution, self.resolution),
-                           interpolation=cv2.INTER_AREA)
-
-        image = image / 255.0 # [0,1] just like the pretrained weights.
-        image = np.expand_dims(image, -1)
+        images = [
+            cv2.resize(img,
+                       (self.resolution,self.resolution),
+                       interpolation=cv2.INTER_AREA) 
+                       for img in images
+                       ] # 5 × (224×224)
+        
+        images = [img / 255.0 for img in images] # [0,1] just like the pretrained weights.
+        image = np.stack(images, axis=-1)  # (224,224,5)
 
         # uses pascal_voc notations (x1,y1,x2,y2)
         if len(anno) > 0:
@@ -103,7 +121,7 @@ class SB_Dataset_Inc_Negatives(Dataset):
             boxes = sample['bboxes']
 
         image = torch.from_numpy(image).to(torch.float32)
-        image = torch.permute(image, (2,0,1))
+        image = torch.permute(image, (2,0,1)) # (5,224,224)
 
         if len(anno) > 0:
             target['boxes'] = torch.as_tensor(boxes,dtype=torch.float32)
