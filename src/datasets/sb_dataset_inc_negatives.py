@@ -29,18 +29,20 @@ class SB_Dataset_Inc_Negatives(Dataset):
 
     def load_window(self, frame_id, vessel_name):
 
+        frame_num = int(frame_id)
+
         if self.t_frames == 1:
-            frame_ids = [frame_id]
+            frame_nums = [frame_id]
 
         else:
             half = self.t_frames // 2
-            frame_ids = list(range(frame_id-half, frame_id+half+1))
+            frame_nums = list(range(frame_num-half, frame_num+half+1))
 
         images = []
         
-        for f in frame_ids:
-            
-            image_path = self.data_root + 'processed/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, f)
+        for f in frame_nums:
+            frame_name = f"{f:04d}"
+            image_path = self.data_root + 'processed/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, frame_name)
             img = np.load(image_path)
             images.append(img) # 5 x (1024,1024)
 
@@ -52,7 +54,7 @@ class SB_Dataset_Inc_Negatives(Dataset):
         img_path, anno = self.annotations[idx]
 
         vessel_name = img_path[:-5]
-        frame_id = int(img_path[-4:])
+        frame_id = img_path[-4:]
 
         images = self.load_window(frame_id, vessel_name)
 
