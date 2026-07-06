@@ -30,13 +30,8 @@ class SB_Dataset_Inc_Negatives(Dataset):
     def load_window(self, frame_id, vessel_name):
 
         frame_num = int(frame_id)
-
-        if self.t_frames == 1:
-            frame_nums = [frame_id]
-
-        else:
-            half = self.t_frames // 2
-            frame_nums = list(range(frame_num-half, frame_num+half+1))
+        half = self.t_frames // 2
+        frame_nums = range(frame_num - half, frame_num + half + 1)
 
         images = []
         
