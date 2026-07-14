@@ -153,7 +153,10 @@ def combine_predictions(predictions, iou_threshold=0.5, suppression_iou_threshol
 def main(config):
 
     save_folder = os.path.join('tests', "results", config['RUN_ID'])
-    os.makedirs(os.path.join(save_folder, "pred"), exist_ok=True)
+    try:
+        os.mkdir(save_folder + '/pred')
+    except Exception as e:
+        print('Warning: ', e)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print('connected to device: {}'.format(device))
@@ -161,8 +164,12 @@ def main(config):
     # load dataset
     (_, _, test_loader), (_, _, test_dataset) = load_dataset(config)
 
-    # load model
+    # load model and pretrained weights.
     model = load_model(config, device)
+    weights = torch.load(save_folder + '/best_map.pt')
+    model.load_state_dict(weights)
+
+    wandb.summary["checkpoint"] = (save_folder + "/best_map.pt")
 
     pred_boxes = []
     true_boxes = []
