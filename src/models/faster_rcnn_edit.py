@@ -515,6 +515,7 @@ def fasterrcnn_resnet50_fpn(num_classes, pretrained, resolution, input_dim, trai
 
     backbone = resnet50(weights=None, norm_layer=norm_layer)
     backbone.conv1 = nn.Conv2d(input_dim, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+
     # Remove the fully connected layer
     backbone.fc = nn.Identity()
 

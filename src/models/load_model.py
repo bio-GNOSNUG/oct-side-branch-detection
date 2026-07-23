@@ -51,20 +51,20 @@ def load_model(config, device):
                                             resolution=config["RESOLUTION"],
                                             input_dim=config["INPUT_DIM"]
                                             ).to(device)
+            
+            if pretrained:
+                weight_path = os.path.join('tests/results', config["PRETRAINED_WEIGHTS"], 'best_map.pt')
+                print(f"Loading detector weights from {weight_path}")
+                
+                state_dict = torch.load(weight_path,map_location=device)
+                state_dict = adapt_input_conv_weights(state_dict,config["INPUT_DIM"])
+
+                model.load_state_dict(state_dict, strict=False)
+                print(model.backbone.body.conv1.weight.shape) # TESTING (!)
+                print(model.backbone.body.conv1.weight.mean()) # TESTING (!)
 
     else:
         print('Model not recognised')
-
-
-    if pretrained:
-
-        weight_path = os.path.join('tests/results', config["PRETRAINED_WEIGHTS"], 'best_map.pt')
-        print(f"Loading detector weights from {weight_path}")
-        
-        state_dict = torch.load(weight_path,map_location=device)
-        state_dict = adapt_input_conv_weights(state_dict,config["INPUT_DIM"])
-
-        model.load_state_dict(state_dict, strict=False)
 
 
     return model
