@@ -83,7 +83,8 @@ class SB_Dataset_Inc_Negatives(Dataset):
 
             # suppose all instances are not crowd
             iscrowd = torch.zeros((boxes.shape[0],), dtype=torch.int64)
-            labels = torch.ones((boxes.shape[0],), dtype=torch.int64)
+            # labels = torch.ones((boxes.shape[0],), dtype=torch.int64)
+            labels = np.ones((boxes.shape[0],), dtype=np.int64)
             area = torch.from_numpy(area)
 
             target = {}
@@ -96,7 +97,8 @@ class SB_Dataset_Inc_Negatives(Dataset):
         else:
 
             iscrowd = torch.empty((0), dtype=torch.int64)
-            labels = torch.empty((0), dtype=torch.int64)
+            # labels = torch.empty((0), dtype=torch.int64)
+            labels = np.empty((0,), dtype=np.int64)
             area = torch.empty((0), dtype=torch.int64)
 
             target = {}
@@ -116,12 +118,16 @@ class SB_Dataset_Inc_Negatives(Dataset):
                                      labels=labels)
             image = sample['image']
             boxes = sample['bboxes']
+            labels = torch.as_tensor(sample["labels"], dtype=torch.int64)
+        else:
+            labels = torch.as_tensor(labels, dtype=torch.int64)
 
         image = torch.from_numpy(image).to(torch.float32)
         image = torch.permute(image, (2,0,1)) # (5,224,224)
 
         if len(anno) > 0:
             target['boxes'] = torch.as_tensor(boxes,dtype=torch.float32)
+            target["labels"] = labels
         else:
             target['boxes'] = torch.empty((0, 4), dtype=torch.float32)
             target['labels'] = torch.empty((0), dtype=torch.int64)
