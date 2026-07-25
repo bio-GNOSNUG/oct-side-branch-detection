@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 import numpy as np
 import json
 import cv2
+import glob
 
 
 class SB_Dataset_Inc_Negatives(Dataset):
@@ -31,15 +32,29 @@ class SB_Dataset_Inc_Negatives(Dataset):
 
         frame_num = int(frame_id)
         half = self.t_frames // 2
-        frame_nums = range(frame_num - half, frame_num + half + 1)
+
+        # determine maximum frame number
+        frame_dir = (self.data_root + f'processed/{self.subset}/{vessel_name}/{self.modality}_frames/')
+        max_frame = len(glob.glob(frame_dir + '*.npy'))
+        frame_nums = []
+
+        for offset in range(-half, half + 1):
+            f = frame_num + offset
+            # edge replication
+            f = max(1, min(f, max_frame))
+            frame_nums.append(f)
 
         images = []
-        
+
         for f in frame_nums:
             frame_name = f"{f:04d}"
-            image_path = self.data_root + 'processed/{}/{}/{}_frames/{}.npy'.format(self.subset, vessel_name,self.modality, frame_name)
+            image_path = (
+                self.data_root
+                + f'processed/{self.subset}/{vessel_name}/{self.modality}_frames/{frame_name}.npy'
+            )
+
             img = np.load(image_path)
-            images.append(img) # 5 x (1024,1024)
+            images.append(img)
 
         return images
         
