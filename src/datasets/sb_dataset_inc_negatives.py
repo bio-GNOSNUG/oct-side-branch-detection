@@ -4,6 +4,7 @@ import numpy as np
 import json
 import cv2
 import glob
+import os
 
 
 class SB_Dataset_Inc_Negatives(Dataset):
@@ -33,16 +34,20 @@ class SB_Dataset_Inc_Negatives(Dataset):
         frame_num = int(frame_id)
         half = self.t_frames // 2
 
-        # determine maximum frame number
+        # determine required frames
         frame_dir = (self.data_root + f'processed/{self.subset}/{vessel_name}/{self.modality}_frames/')
-        max_frame = len(glob.glob(frame_dir + '*.npy'))
+        files = sorted(glob.glob(frame_dir + '*.npy'))
+        available_frames = [int(os.path.splitext(os.path.basename(f))[0])for f in files]
+        frame_to_idx = {f:i for i,f in enumerate(available_frames)}
+        centre_idx = frame_to_idx[frame_num]
+
         frame_nums = []
 
         for offset in range(-half, half + 1):
-            f = frame_num + offset
-            # edge replication
-            f = max(1, min(f, max_frame))
-            frame_nums.append(f)
+            idx = centre_idx + offset
+             # edge replication
+            idx = max(0, min(idx, len(available_frames) - 1))
+            frame_nums.append(available_frames[idx])
 
         images = []
 
