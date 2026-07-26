@@ -67,6 +67,15 @@ def rotate_img_bbox(img, angle):
 
 # function to convert a torchtensor back to PIL image
 def torch_to_pil(img):
+
+    # temporal stack (T,H,W)
+    if img.ndim == 3 and img.shape[0] > 1:
+        img = img[img.shape[0] // 2]
+
+    # grayscale image (H,W)
+    if img.ndim == 2:
+        img = img.unsqueeze(0)
+
     return torchtrans.ToPILImage()(img).convert('RGB')
 
 def unrotate_bbox(bbox, angle, img_width=224, img_height=224):
@@ -220,14 +229,15 @@ def main(config):
 
                 f, axes = plt.subplots(1, 5, figsize=(20, 5))
                 for i, ax in enumerate(axes.flatten()[:4]):
-                    ax.imshow(img_cat[0][0].cpu().numpy())
+                    centre_idx = img_cat.shape[1] // 2
+                    ax.imshow(img_cat[0][centre_idx].cpu().numpy())
                     for box_i, box_pred in enumerate(predictions[i]['boxes']):
                         bbox = box_pred.cpu().numpy()
                         x, y, width, height = bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1]
                         rect = patches.Rectangle((x, y), width, height, linewidth=1, edgecolor='r', facecolor='none')
                         ax.add_patch(rect)
                         ax.set_title('prediction ' + str(i))
-                axes[4].imshow(img_cat[0][0].cpu().numpy())
+                axes[4].imshow(img_cat[0][centre_idx].cpu().numpy())
                 for box_i, box_pred in enumerate(pred['boxes']):
                     bbox = box_pred.cpu().numpy()
                     x, y, width, height = bbox[0], bbox[1], bbox[2] - bbox[0], bbox[3] - bbox[1]
