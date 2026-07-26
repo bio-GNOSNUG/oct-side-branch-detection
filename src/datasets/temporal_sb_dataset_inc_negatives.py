@@ -7,7 +7,7 @@ import glob
 import os
 
 
-class SB_Dataset_Inc_Negatives(Dataset):
+class temporal_SB_Dataset_Inc_Negatives(Dataset):
 
     def __init__(self, data_root, modality, subset, transforms, resolution, t_frames):
         self.transforms = transforms
@@ -144,6 +144,8 @@ class SB_Dataset_Inc_Negatives(Dataset):
 
         image = torch.from_numpy(image).to(torch.float32)
         image = torch.permute(image, (2,0,1)) # (5,224,224)
+        image = image.unsqueeze(1) # (5,1,224,224)
+        print(image.shape)
 
         if len(anno) > 0:
             target['boxes'] = torch.as_tensor(boxes,dtype=torch.float32)
