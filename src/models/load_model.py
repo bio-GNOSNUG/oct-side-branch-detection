@@ -1,6 +1,7 @@
 import os
 import torch
-from src.models.faster_rcnn_edit import fasterrcnn_resnet18_fpn, fasterrcnn_resnet50_fpn, adapt_input_conv_weights
+from src.models.faster_rcnn_edit import fasterrcnn_resnet18_fpn, fasterrcnn_resnet50_fpn, fasterrcnn_temporal_resnet50_fpn
+from src.models.faster_rcnn_edit import  adapt_input_conv_weights
 
 def load_model(config, device):
 
@@ -48,6 +49,42 @@ def load_model(config, device):
             model = fasterrcnn_resnet50_fpn(num_classes=2,
                                             trainable_backbone_layers=5,
                                             pretrained=pretrained,
+                                            resolution=config["RESOLUTION"],
+                                            input_dim=config["INPUT_DIM"]
+                                            ).to(device)
+            
+            if pretrained:
+                weight_path = os.path.join('tests/results', config["PRETRAINED_WEIGHTS"], 'best_map.pt')
+                print(f"Loading detector weights from {weight_path}")
+                
+                state_dict = torch.load(weight_path,map_location=device)
+                state_dict = adapt_input_conv_weights(state_dict,config["INPUT_DIM"])
+
+                model.load_state_dict(state_dict, strict=False)
+                print(model.backbone.body.conv1.weight.shape) # TESTING (!)
+                print(model.backbone.body.conv1.weight.mean()) # TESTING (!)
+
+    elif config['MODEL'] == 'fasterrcnn_temporal_resnet50_fpn':
+
+        if config['INFERENCE']:
+            model = fasterrcnn_temporal_resnet50_fpn(num_classes=2,
+                                            trainable_backbone_layers=5,
+                                            pretrained=pretrained,
+                                            temporal = True,
+                                            resolution=config["RESOLUTION"],
+                                            input_dim=config["INPUT_DIM"],
+                                            # rpn_fg_iou_thresh=config['RPN_FG_IOU_THRESH'], # train
+                                            # rpn_bg_iou_thresh=config['RPN_BG_IOU_THRESH'], # train
+                                            rpn_pre_nms_top_n_test=config['PRE_NMS_TOP_N_TEST'], # test
+                                            box_nms_thresh=config['NMS_IOU'],
+                                            box_score_thresh=config['CONF_THRESH']
+                                            ).to(device)
+
+        else:
+            model = fasterrcnn_temporal_resnet50_fpn(num_classes=2,
+                                            trainable_backbone_layers=5,
+                                            pretrained=pretrained,
+                                            temporal = True,
                                             resolution=config["RESOLUTION"],
                                             input_dim=config["INPUT_DIM"]
                                             ).to(device)

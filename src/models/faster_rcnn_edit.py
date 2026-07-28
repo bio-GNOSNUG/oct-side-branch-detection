@@ -14,6 +14,7 @@ from torchvision.models._utils import _ovewrite_value_param, handle_legacy_inter
 from torchvision.models.mobilenetv3 import mobilenet_v3_large, MobileNet_V3_Large_Weights
 from torchvision.models.resnet import resnet50, ResNet50_Weights
 from torchvision.models import resnet18
+from src.models.temporal_resnet import TemporalResNet50
 from torchvision.models.detection._utils import overwrite_eps
 from torchvision.models.detection.anchor_utils import AnchorGenerator
 from torchvision.models.detection.backbone_utils import _mobilenet_extractor, _resnet_fpn_extractor, _validate_trainable_layers
@@ -167,6 +168,7 @@ class FasterRCNN(GeneralizedRCNN):
         self,
         backbone,
         num_classes=None,
+        temporal=False,
         # transform parameters
         min_size=224,
         max_size=224,
@@ -277,7 +279,7 @@ class FasterRCNN(GeneralizedRCNN):
         #   image_mean = [0.485, 0.456, 0.406]
         #if image_std is None:
         #   image_std = [0.229, 0.224, 0.225]
-        transform = GeneralizedRCNNTransform()
+        transform = GeneralizedRCNNTransform(temporal=temporal)
 
         super().__init__(backbone, rpn, roi_heads, transform)
 
@@ -541,6 +543,27 @@ def fasterrcnn_resnet50_fpn(num_classes, pretrained, resolution, input_dim, trai
         rpn_anchor_generator=anchor_generator,
         #box_roi_pool=roi_pooler,
         #box_predictor=box_predictor,
+        **kwargs
+    )
+
+    return model
+
+
+def fasterrcnn_temporal_resnet50_fpn(
+        num_classes,
+        resolution,
+        input_dim,
+        temporal=True,
+        **kwargs):
+    
+    backbone = TemporalResNet50(input_dim=input_dim)
+    anchor_generator = get_anchor_generator(resolution)
+
+    model = FasterRCNN(
+        backbone,
+        temporal=True,
+        num_classes=num_classes,
+        rpn_anchor_generator=anchor_generator,
         **kwargs
     )
 

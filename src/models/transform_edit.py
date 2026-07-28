@@ -70,7 +70,7 @@ class GeneralizedRCNNTransform(nn.Module):
     """
 
     #def __init__(self, min_size, max_size, image_mean, image_std):
-    def __init__(self):
+    def __init__(self, temporal=False):
         super(GeneralizedRCNNTransform, self).__init__()
         # if not isinstance(min_size, (list, tuple)):
         #     min_size = (min_size,)
@@ -78,6 +78,7 @@ class GeneralizedRCNNTransform(nn.Module):
         # self.max_size = max_size
         # self.image_mean = image_mean
         # self.image_std = image_std
+        self.temporal = temporal
 
     def forward(self, images, targets=None):
         ## type: (List[Tensor], Optional[List[Dict[str, Tensor]]])
@@ -86,9 +87,12 @@ class GeneralizedRCNNTransform(nn.Module):
             image = images[i]
             target_index = targets[i] if targets is not None else None
 
-            if image.dim() != 3:
-                raise ValueError("images is expected to be a list of 3d tensors "
-                                 "of shape [C, H, W], got {}".format(image.shape))
+            if self.temporal:
+                if image.dim() != 4:
+                    raise ValueError(f"Expected temporal image [T,C,H,W], got {image.shape}")
+            else:
+                if image.dim() != 3:
+                    raise ValueError(f"Expected image [C,H,W], got {image.shape}")
             #image = self.normalize(image)
             #image, target_index = self.resize(image, target_index)
             images[i] = image
@@ -179,8 +183,15 @@ class GeneralizedRCNNTransform(nn.Module):
             for index, item in enumerate(sublist):
                 maxes[index] = max(maxes[index], item)
         return maxes
-
+    
     def batch_images(self, images, size_divisible=32):
+        # Separate strategies for baseline and model implementation
+        if not self.temporal:
+            return self._batch_standard(images, size_divisible)
+            
+        return self._batch_temporal(images, size_divisible)
+
+    def _batch_standard(self, images, size_divisible=32):
         ## type: (List[Tensor], int)
         if torchvision._is_tracing():
             # batch_images() does not export well to ONNX
@@ -199,6 +210,20 @@ class GeneralizedRCNNTransform(nn.Module):
             pad_img[: img.shape[0], : img.shape[1], : img.shape[2]].copy_(img)
 
         return batched_imgs
+
+
+    def _batch_temporal(self, images, size_divisible=32):
+        max_size = self.max_by_axis([list(img.shape) for img in images])
+        stride = float(size_divisible)
+        max_size = list(max_size)
+        max_size[2] = int(math.ceil(float(max_size[2]) / stride) * stride)
+        max_size[3] = int(math.ceil(float(max_size[3]) / stride) * stride)
+        batch_shape = [len(images)] + max_size
+        batched_imgs = images[0].new_full(batch_shape, 0)
+        for img, pad_img in zip(images, batched_imgs):
+            pad_img[:img.shape[0],:img.shape[1],:img.shape[2],:img.shape[3]].copy_(img)
+        
+        return batched_imgs   
 
     def postprocess(self, result, image_shapes, original_image_sizes):
         ## type: (List[Dict[str, Tensor]], List[Tuple[int, int]], List[Tuple[int, int]])
