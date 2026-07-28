@@ -549,13 +549,8 @@ def fasterrcnn_resnet50_fpn(num_classes, pretrained, resolution, input_dim, trai
     return model
 
 
-def fasterrcnn_temporal_resnet50_fpn(
-        num_classes,
-        resolution,
-        input_dim,
-        temporal=True,
-        **kwargs):
-    
+def fasterrcnn_temporal_resnet50_fpn(num_classes,resolution,input_dim,temporal=True,**kwargs):
+
     backbone = TemporalResNet50(input_dim=input_dim)
     anchor_generator = get_anchor_generator(resolution)
 

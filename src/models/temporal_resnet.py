@@ -57,15 +57,15 @@ class TemporalResNet50(nn.Module):
         backbone.conv1 = nn.Conv2d(input_dim,64,kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
 
         # Feature extraction only
-        self.conv1 = backbone.conv1
-        self.bn1 = backbone.bn1
-        self.relu = backbone.relu
-        self.maxpool = backbone.maxpool
-
-        self.layer1 = backbone.layer1
-        self.layer2 = backbone.layer2
-        self.layer3 = backbone.layer3
-        self.layer4 = backbone.layer4
+        self.body = nn.Module()
+        self.body.conv1 = backbone.conv1
+        self.body.bn1 = backbone.bn1
+        self.body.relu = backbone.relu
+        self.body.maxpool = backbone.maxpool
+        self.body.layer1 = backbone.layer1
+        self.body.layer2 = backbone.layer2
+        self.body.layer3 = backbone.layer3
+        self.body.layer4 = backbone.layer4
 
         # Temporal attention modules
         self.temporal1 = TemporalAttention(256)
@@ -89,15 +89,15 @@ class TemporalResNet50(nn.Module):
         Output:
             feature maps
         """
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
+        x = self.body.conv1(x)
+        x = self.body.bn1(x)
+        x = self.body.relu(x)
+        x = self.body.maxpool(x)
 
-        c1 = self.layer1(x)
-        c2 = self.layer2(c1)
-        c3 = self.layer3(c2)
-        c4 = self.layer4(c3)
+        c1 = self.body.layer1(x)
+        c2 = self.body.layer2(c1)
+        c3 = self.body.layer3(c2)
+        c4 = self.body.layer4(c3)
 
         return c1,c2,c3,c4
 
