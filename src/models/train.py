@@ -110,10 +110,13 @@ def main(config):
             best_val_map = val_map
             torch.save(model.state_dict(), os.path.join(save_folder, 'best_map.pt'))
             print("saved model new best mAP")
-
-            artifact = wandb.Artifact("best-model",type="model")
-            artifact.add_file(os.path.join(save_folder,"best_map.pt"))
-            wandb.log_artifact(artifact)
+            
+            try:
+                artifact = wandb.Artifact("best-model", type="model")
+                artifact.add_file(os.path.join(save_folder, "best_map.pt"))
+                wandb.log_artifact(artifact)
+            except Exception as e:
+                print(f"W&B artifact upload failed: {e}")
 
         else: 
             epoch_no_improvement += 1

@@ -61,8 +61,8 @@ def load_model(config, device):
                 state_dict = adapt_input_conv_weights(state_dict,config["INPUT_DIM"])
 
                 model.load_state_dict(state_dict, strict=False)
-                print(model.backbone.body.conv1.weight.shape) # TESTING (!)
-                print(model.backbone.body.conv1.weight.mean()) # TESTING (!)
+                #print(model.backbone.body.conv1.weight.shape) # TESTING (!)
+                #print(model.backbone.body.conv1.weight.mean()) # TESTING (!)
 
     elif config['MODEL'] == 'fasterrcnn_temporal_resnet50_fpn':
 
@@ -97,8 +97,8 @@ def load_model(config, device):
                 state_dict = adapt_input_conv_weights(state_dict,config["INPUT_DIM"])
 
                 model.load_state_dict(state_dict, strict=False)
-                print(model.backbone.body.conv1.weight.shape) # TESTING (!)
-                print(model.backbone.body.conv1.weight.mean()) # TESTING (!)
+                #print(model.backbone.body.conv1.weight.shape) # TESTING (!)
+                #print(model.backbone.body.conv1.weight.mean()) # TESTING (!)
 
     else:
         print('Model not recognised')

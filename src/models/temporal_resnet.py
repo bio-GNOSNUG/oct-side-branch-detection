@@ -4,6 +4,7 @@ from collections import OrderedDict
 from torchvision.models import resnet50
 from torchvision.ops import misc as misc_nn_ops
 from torchvision.ops import FeaturePyramidNetwork
+import torch.nn.functional as F
 
 
 class TemporalAttention(nn.Module):
@@ -102,7 +103,7 @@ class TemporalResNet50(nn.Module):
         return c1,c2,c3,c4
 
     def forward(self, images):
-        print("BACKBONE INPUT:", images.shape) # TESTING (!)
+        #print("BACKBONE INPUT:", images.shape) # TESTING (!)
         
         features = {"0":[],"1":[],"2":[],"3":[]}
         
@@ -138,5 +139,6 @@ class TemporalResNet50(nn.Module):
 
         # FPN
         features = self.fpn(features)
+        features["4"] = F.max_pool2d(features["3"], kernel_size=1, stride=2) # Mimics pytorch implementation
 
         return features
