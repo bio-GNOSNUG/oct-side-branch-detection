@@ -250,6 +250,12 @@ def main(config):
             else:
                 pred = model(img.unsqueeze(0).to(device))[0]
 
+            print(type(img)) # (!) TESTING
+            print(img.shape) # (!) TESTING
+            # Temporal sequence -> centre frame
+            if img.ndim == 4:
+                img = img[img.shape[0] // 2]
+
             plot_img_bbox(torch_to_pil(img), target, pred, save_folder+'/pred/'+ target["image_id"] + '.jpg', low_resolution=False)
 
             # post processing to remove boxes with 50% overlap with lumen
