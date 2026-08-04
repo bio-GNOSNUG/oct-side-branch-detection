@@ -250,8 +250,6 @@ def main(config):
             else:
                 pred = model(img.unsqueeze(0).to(device))[0]
 
-            print(type(img)) # (!) TESTING
-            print(img.shape) # (!) TESTING
             # Temporal sequence -> centre frame
             if img.ndim == 4:
                 img = img[img.shape[0] // 2]
