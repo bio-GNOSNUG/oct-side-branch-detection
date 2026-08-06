@@ -27,19 +27,22 @@ class TemporalAttention(nn.Module):
             nn.Conv3d(channels // 2, 1,kernel_size=1)
         )
 
-    def forward(self, x):
+    def forward(self, x, gamma):
         # x:
         # B,T,C,H,W
 
         # Conv3d expects:
         # B,C,T,H,W
+        centre = x[:, x.shape[1]//2]
         x_perm = x.permute(0,2,1,3,4)
         weights = self.attention(x_perm)
 
         # B,1,T,H,W
         weights = torch.softmax(weights,dim=2)
-        weighted = x_perm * weights
-        fused = weighted.sum(dim=2)
+        #weighted = x_perm * weights
+        #fused = weighted.sum(dim=2)
+        temporal = (x_perm * weights).sum(dim=2) # (!) testing 
+        fused = centre + gamma * (temporal - centre) # (!) testing 
 
         # B,C,H,W
         return fused
@@ -69,10 +72,14 @@ class TemporalResNet50(nn.Module):
         self.body.layer4 = backbone.layer4
 
         # Temporal attention modules
+        # number of feature channels ouput at each ResNet stage
         self.temporal1 = TemporalAttention(256)
         self.temporal2 = TemporalAttention(512)
         self.temporal3 = TemporalAttention(1024)
         self.temporal4 = TemporalAttention(2048)
+
+
+        self.gamma = nn.Parameter(torch.tensor(0.0)) # (!) testing 
 
         # Feed the weighted representations into FPN
         self.fpn = FeaturePyramidNetwork(in_channels_list=[256,512,1024,2048],out_channels=256)
@@ -125,10 +132,11 @@ class TemporalResNet50(nn.Module):
 
             # Temporal attention
             # (B,C,H,W)
-            features["0"].append(self.temporal1(c1))
-            features["1"].append(self.temporal2(c2))
-            features["2"].append(self.temporal3(c3))
-            features["3"].append(self.temporal4(c4))
+            features["0"].append(self.temporal1(c1,self.gamma))
+            features["1"].append(self.temporal2(c2, self.gamma))
+            features["2"].append(self.temporal3(c3, self.gamma))
+            features["3"].append(self.temporal4(c4, self.gamma))
+
 
         # Combine batch samples
         features = OrderedDict({
@@ -139,6 +147,6 @@ class TemporalResNet50(nn.Module):
 
         # FPN
         features = self.fpn(features)
-        features["4"] = F.max_pool2d(features["3"], kernel_size=1, stride=2) # Mimics pytorch implementation
+        features["4"] = F.max_pool2d(features["3"], kernel_size=1, stride=2) 
 
         return features

@@ -88,16 +88,22 @@ def main(config):
 
         print('Val mAP: {:.3f}, loss: {:.3f}'.format(val_map, val_loss))
 
-        wandb.log({"epoch": epoch,
-                   "train_loss": train_loss,
-                   "val_loss": float(val_loss),
-                   "val_map": val_map,
-                   "lr": optimizer.param_groups[0]["lr"],
-                   "loss_classifier": loss_metrics["loss_classifier"],
-                   "loss_box_reg": loss_metrics["loss_box_reg"],
-                   "loss_objectness": loss_metrics["loss_objectness"],
-                   "loss_rpn_box_reg": loss_metrics["loss_rpn_box_reg"]})
+        log_dict = {
+            "epoch": epoch,
+            "train_loss": train_loss,
+            "val_loss": float(val_loss),
+            "val_map": val_map,
+            "lr": optimizer.param_groups[0]["lr"],
+            "loss_classifier": loss_metrics["loss_classifier"],
+            "loss_box_reg": loss_metrics["loss_box_reg"],
+            "loss_objectness": loss_metrics["loss_objectness"],
+            "loss_rpn_box_reg": loss_metrics["loss_rpn_box_reg"]}
+        
+        if config['DATASET'] == 'temporal_sb_inc_negatives':
+            log_dict["gamma"] = model.backbone.gamma.item()
 
+        wandb.log(log_dict)
+            
         # save model if the performance improves.
         # if val_loss < best_val_loss:
         #     print('Val loss improved from {:.3f} to {:.3f}. Saving model to..{}'.format(best_val_loss, val_loss, save_folder))
@@ -135,6 +141,7 @@ def main(config):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--DATA_ROOT', type=str, default=None)
+    parser.add_argument('--DATASET', type=str, default=None)
     parser.add_argument('--TRAIN_BATCH_SIZE', type=int, default=None)
     parser.add_argument('--VAL_BATCH_SIZE', type=int, default=None)
     parser.add_argument('--CONFIG', type=str)
